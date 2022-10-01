@@ -17,7 +17,6 @@ export default function roomIdMessageIdRoute(req, res) {
       message: "Yon don't permission to access this api",
     });
   }
-
   const rooms = readChatRoomsDB();
 
   //check if roomId exist
@@ -26,49 +25,46 @@ export default function roomIdMessageIdRoute(req, res) {
   });
 
   if (!result) {
-    return res.status(401).json({
+    return res.status(404).json({
       ok: false,
       message: "Invalid room id",
     });
   }
-
   //check if messageId exist
   const result_msg = result.messages.find((element) => {
     return element.messageId === messageId;
   });
 
-  if (!result_msg) {
-    return res.status(401).json({
+  if (!result) {
+    return res.status(404).json({
       ok: false,
       message: "Invalid message id",
     });
   }
-
   //check if token owner is admin, they can delete any message
-
-  if (user.isAdmin === false && user.username !== result_msg.username) {
-    return res
-      .status(403)
-      .json({ ok: false, message: "You do not permisson to access this data" });
+  if (user.isAdmin === false && user.username === result_msg.username) {
+    return res.status(403).json({
+      ok: false,
+      message: "You do not have permission to access this data",
+    });
   }
-  //or if token owner is normal user, they can only delete their own message!
-  if (user.isAdmin === true) {
-    const newMessages = result.messages.filter(
+
+  if (user.isAdmin == true) {
+    const newM = result.messages.filter(
       (element) => messageId !== element.messageId
     );
-    result.messages = newMessages;
-
+    result.messages = newM;
     writeChatRoomsDB(rooms);
     return res.status(200).json({
       ok: true,
     });
   }
-  if (user.username === result_msg.username) {
-    const newMessages = result.messages.filter(
+
+  if (user.username == result_msg.username) {
+    const newM = result.messages.filter(
       (element) => messageId !== element.messageId
     );
-    result.messages = newMessages;
-
+    result.messages = newM;
     writeChatRoomsDB(rooms);
     return res.status(200).json({
       ok: true,

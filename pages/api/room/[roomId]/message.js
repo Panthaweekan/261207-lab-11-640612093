@@ -2,7 +2,7 @@ import {
   readChatRoomsDB,
   writeChatRoomsDB,
 } from "../../../../backendLibs/dbLib";
-import { v4 as uuidv4 } from "uuid";
+import { v4 as uuidv4, v4 } from "uuid";
 import { checkToken } from "../../../../backendLibs/checkToken";
 
 export default function roomIdMessageRoute(req, res) {
@@ -15,29 +15,27 @@ export default function roomIdMessageRoute(req, res) {
         message: "Yon don't permission to access this api",
       });
     }
-
     //get roomId from url
     const roomId = req.query.roomId;
 
     const rooms = readChatRoomsDB();
 
     //check if roomId exist
-
     const result = rooms.find((element) => {
       return element.roomId === roomId;
     });
 
     if (!result) {
-      return res.status(401).json({
+      return res.status(404).json({
         ok: false,
         message: "Invalid room id",
       });
     }
-    return res.status(201).json({
+
+    return res.status(200).json({
       ok: true,
       messages: result.messages,
     });
-
     //find room and return
     //...
   } else if (req.method === "POST") {
@@ -54,18 +52,17 @@ export default function roomIdMessageRoute(req, res) {
     const roomId = req.query.roomId;
     const rooms = readChatRoomsDB();
 
-    //check if roomId exist4
+    //check if roomId exist
     const result = rooms.find((element) => {
       return element.roomId === roomId;
     });
 
     if (!result) {
-      return res.status(401).json({
+      return res.status(404).json({
         ok: false,
         message: "Invalid room id",
       });
     }
-
     //validate body
     if (typeof req.body.text !== "string" || req.body.text.length === 0)
       return res.status(400).json({ ok: false, message: "Invalid text input" });
@@ -76,6 +73,7 @@ export default function roomIdMessageRoute(req, res) {
       text: req.body.text,
       username: user.username,
     };
+
     result.messages.push(newData);
 
     writeChatRoomsDB(rooms);
